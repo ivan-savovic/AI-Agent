@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import { Button } from "/components/ui/button"
-import { Input } from "/components/ui/input"
-import { Textarea } from "/components/ui/textarea"
-import { Label } from "/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "/components/ui/card"
-import { ArrowRight, Check, X, Play, Shield, Heart, Settings, Gamepad2, Monitor } from "lucide-react"
+import { useState, useEffect, FormEvent } from 'react'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Textarea } from './ui/textarea'
+import { Label } from './ui/label'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/card'
+import { ArrowRight, Check, X, Play, Shield, Heart, Settings, Gamepad2, Monitor } from 'lucide-react'
 
 export default function ProGamingAgent() {
   const [command, setCommand] = useState('')
@@ -30,81 +30,79 @@ export default function ProGamingAgent() {
     { id: 'auto-farm', name: 'Auto Farm', icon: <Gamepad2 className="w-4 h-4" /> }
   ]
 
+  // Simulate async connection
   useEffect(() => {
-    // Simulate game connection status
     if (selectedGame) {
       setGameStatus('Connecting...')
       const timer = setTimeout(() => {
         setGameConnected(true)
         setGameStatus(`Connected to ${selectedGame}`)
-        setOutput([...output, `System: Successfully connected to ${selectedGame}`])
+        setOutput(prev => [...prev, `System: Successfully connected to ${selectedGame}`])
       }, 2000)
       return () => clearTimeout(timer)
     }
   }, [selectedGame])
 
-  const handleCommandSubmit = (e: React.FormEvent) => {
+  const handleCommandSubmit = (e: FormEvent) => {
     e.preventDefault()
     if (!command.trim()) return
 
-    const newOutput = [...output, `> ${command}`]
-    
-    // Process command
-    let response = ''
+    const cmdLine = `> ${command}`
     const cmd = command.toLowerCase()
-    
+
+    // Helper to push new output lines
+    const push = (line: string) => setOutput(prev => [...prev, line])
+
+    push(cmdLine)
+
     if (cmd.includes('help') || cmd === '?') {
-      response = 'Available commands: help, loot, target, heal, farm, feedback, connect, status'
+      push('Available commands: help, loot, target, heal, farm, feedback, connect, status')
     } else if (cmd.includes('loot')) {
       toggleAutomation('auto-loot')
-      response = 'Toggled Auto Loot'
+      push('Toggled Auto Loot')
     } else if (cmd.includes('target')) {
       toggleAutomation('auto-target')
-      response = 'Toggled Auto Target'
+      push('Toggled Auto Target')
     } else if (cmd.includes('heal')) {
       toggleAutomation('auto-heal')
-      response = 'Toggled Auto Heal'
+      push('Toggled Auto Heal')
     } else if (cmd.includes('farm')) {
       toggleAutomation('auto-farm')
-      response = 'Toggled Auto Farm'
+      push('Toggled Auto Farm')
     } else if (cmd.includes('feedback')) {
       setShowFeedback(true)
-      response = 'Opening feedback form'
+      push('Opening feedback form')
     } else if (cmd.includes('connect')) {
       const game = cmd.replace('connect', '').trim()
       const foundGame = games.find(g => g.name.toLowerCase().includes(game) || g.id.includes(game))
       if (foundGame) {
         setSelectedGame(foundGame.name)
-        response = `Attempting to connect to ${foundGame.name}...`
+        push(`Attempting to connect to ${foundGame.name}...`)
       } else {
-        response = 'Game not found. Available games: ' + games.map(g => g.name).join(', ')
+        push('Game not found. Available games: ' + games.map(g => g.name).join(', '))
       }
     } else if (cmd.includes('status')) {
-      response = `Game Status: ${gameStatus}`
+      push(`Game Status: ${gameStatus}`)
     } else {
-      response = 'Command not recognized. Type "help" for available commands.'
+      push('Command not recognized. Type "help" for available commands.')
     }
 
-    setOutput([...newOutput, response])
     setCommand('')
   }
 
   const toggleAutomation = (id: string) => {
-    setActiveAutomations(prev => 
-      prev.includes(id) 
-        ? prev.filter(a => a !== id) 
-        : [...prev, id]
+    setActiveAutomations(prev =>
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
     )
     if (!gameConnected) {
-      setOutput([...output, 'Warning: Not connected to any game. Automation may not work.'])
+      setOutput(prev => [...prev, 'Warning: Not connected to any game. Automation may not work.'])
     }
   }
 
-  const submitFeedback = (e: React.FormEvent) => {
+  const submitFeedback = (e: FormEvent) => {
     e.preventDefault()
     if (!feedback.trim()) return
-    
-    setOutput([...output, 'Feedback submitted. Thank you!'])
+    setOutput(prev => [...prev, 'Feedback submitted. Thank you!'])
     setFeedback('')
     setShowFeedback(false)
   }
@@ -120,7 +118,7 @@ export default function ProGamingAgent() {
               NEXUS AI Gaming Agent
             </h1>
           </div>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${gameConnected ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+          <div className={\`px-3 py-1 rounded-full text-sm font-medium \${gameConnected ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}\`}>
             {gameStatus}
           </div>
         </div>
@@ -138,13 +136,13 @@ export default function ProGamingAgent() {
               <CardContent>
                 <div className="space-y-4">
                   <form onSubmit={handleCommandSubmit} className="flex gap-2">
-                    <Input 
+                    <Input
                       value={command}
                       onChange={(e) => setCommand(e.target.value)}
                       placeholder="Enter command (type 'help' for options)"
                       className="flex-1 bg-gray-900 border-gray-800 text-amber-100 placeholder-gray-500 focus-visible:ring-amber-500"
                     />
-                    <Button 
+                    <Button
                       type="submit"
                       className="bg-amber-600 hover:bg-amber-500 text-black font-bold"
                     >
@@ -199,14 +197,14 @@ export default function ProGamingAgent() {
                       />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setShowFeedback(false)}
                         className="border-gray-700 text-amber-100 hover:bg-gray-800"
                       >
                         Cancel
                       </Button>
-                      <Button 
+                      <Button
                         type="submit"
                         className="bg-amber-600 hover:bg-amber-500 text-black font-bold"
                       >
@@ -239,7 +237,7 @@ export default function ProGamingAgent() {
                           key={game.id}
                           variant={selectedGame === game.name ? 'default' : 'outline'}
                           onClick={() => setSelectedGame(game.name)}
-                          className={`justify-start ${selectedGame === game.name ? 'bg-amber-600 hover:bg-amber-500 text-black' : 'border-gray-700 text-amber-100 hover:bg-gray-800'}`}
+                          className={\`justify-start \${selectedGame === game.name ? 'bg-amber-600 hover:bg-amber-500 text-black' : 'border-gray-700 text-amber-100 hover:bg-gray-800'}\`}
                         >
                           <Monitor className="w-4 h-4 mr-2" />
                           {game.name}
@@ -247,14 +245,24 @@ export default function ProGamingAgent() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="pt-2">
-                    <Button 
+                    <Button
                       className="w-full bg-amber-600 hover:bg-amber-500 text-black font-bold"
                       onClick={() => {
                         if (selectedGame) {
-                          setGameConnected(!gameConnected)
-                          setGameStatus(gameConnected ? 'Disconnected' : `Connected to ${selectedGame}`)
+                          if (gameConnected) {
+                            // disconnect
+                            setGameConnected(false)
+                            setGameStatus('Disconnected')
+                            setActiveAutomations([])
+                            setOutput(prev => [...prev, \`System: Disconnected from \${selectedGame}\`])
+                          } else {
+                            // connect
+                            setGameConnected(true)
+                            setGameStatus(\`Connected to \${selectedGame}\`)
+                            setOutput(prev => [...prev, \`System: Connected to \${selectedGame}\`])
+                          }
                         }
                       }}
                       disabled={!selectedGame}
@@ -277,18 +285,18 @@ export default function ProGamingAgent() {
               <CardContent>
                 <div className="space-y-3">
                   {automationOptions.map(option => (
-                    <div 
+                    <div
                       key={option.id}
-                      className={`p-3 rounded-lg border ${activeAutomations.includes(option.id) ? 'border-amber-500 bg-amber-900/20' : 'border-gray-700'}`}
+                      className={\`p-3 rounded-lg border \${activeAutomations.includes(option.id) ? 'border-amber-500 bg-amber-900/20' : 'border-gray-700'}\`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-full ${activeAutomations.includes(option.id) ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-400'}`}>
+                          <div className={\`p-2 rounded-full \${activeAutomations.includes(option.id) ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-400'}\`}>
                             {option.icon}
                           </div>
                           <span className="text-amber-100">{option.name}</span>
                         </div>
-                        <Button 
+                        <Button
                           size="sm"
                           variant={activeAutomations.includes(option.id) ? 'default' : 'outline'}
                           onClick={() => toggleAutomation(option.id)}
